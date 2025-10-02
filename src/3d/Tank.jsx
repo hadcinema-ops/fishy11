@@ -1,3 +1,4 @@
+import LogoBackdrop from './LogoBackdrop.jsx'
 import React, { useMemo } from 'react'
 import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
@@ -50,6 +51,9 @@ export default function Tank(){
         <planeGeometry args={[140, 50, 1, 1]} />
         <meshStandardMaterial color="#051922" roughness={0.9} metalness={0.05} />
       </mesh>
+
+      {/* Coin logo on the back wall */}
+<LogoBackdrop url="/assets/coin-logo.png" size={60} opacity={0.22} y={1} z={-41.9} />
 
       <Bubbles />
     </group>

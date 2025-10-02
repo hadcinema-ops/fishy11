@@ -74,9 +74,9 @@ function Fish({ holder, onClick, showLabel=true }){
     if (p.y > bounds.yUp || p.y < bounds.yDn) init.v.y *= -1
     if (p.z > bounds.z || p.z < -bounds.z) init.v.z *= -1
 
-    init.v.x += Math.sin((p.z + seed*5.0)*0.5)*0.006
-    init.v.z += Math.cos((p.x + seed*3.0)*0.5)*0.006
-    init.v.y += Math.sin((p.x+p.z+seed*6.0)*0.2)*0.0025
+    init.v.x += Math.sin((p.z + seed*5.0)*0.5)*0.006 - p.x*0.0008
+    init.v.z += Math.cos((p.x + seed*3.0)*0.5)*0.006 - p.z*0.0008
+    init.v.y += Math.sin((p.x+p.z+seed*6.0)*0.2)*0.0025 - (p.y*0.0005)
     init.v.clampLength(0.2, 1.0)
 
     // Face movement direction (+Z forward in our model, so align there)

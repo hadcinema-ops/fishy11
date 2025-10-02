@@ -14,17 +14,20 @@ export function demoHolders(n = 60, minTokens = 100000){
 }
 
 export async function fetchHoldersAndEnrich(mint, heliusKey, birdeyeKey, minTokens){
-  const [holders, meta] = await Promise.all([
-    fetchHeliusHolders(mint, heliusKey, minTokens),
-    fetchBirdeyeMeta(mint, birdeyeKey),
-  ])
+  let holders = []
+  try {
+    holders = await fetchHeliusHolders(mint, heliusKey, minTokens)
+  } catch (e){
+    console.warn('Helius failed, trying Birdeye holders...', e)
+    holders = await fetchBirdeyeHolders(mint, birdeyeKey, minTokens)
+  }
+  const meta = await fetchBirdeyeMeta(mint, birdeyeKey)
   const price = meta?.price || 0
   holders.forEach(h => { h.pnl = (h.balanceTokens/1e6) * price * (Math.random()*0.4-0.2) })
   return { holders, meta }
 }
 
-// NOTE: Helius endpoints and shapes can change; this version expects a 'holders' array with address/amount.
-// If this fails due to CORS or shape changes, the app falls back to Demo Mode.
+// Helius holders
 async function fetchHeliusHolders(mint, apiKey, minTokens){
   const url = `https://api.helius.xyz/v0/tokens/holders?api-key=${apiKey}&mint=${mint}`
   const r = await fetch(url)
@@ -42,13 +45,30 @@ async function fetchHeliusHolders(mint, apiKey, minTokens){
   return holders
 }
 
+// Birdeye holders (fallback)
+async function fetchBirdeyeHolders(mint, apiKey, minTokens){
+  const url = `https://public-api.birdeye.so/defi/token_holders?address=${mint}&sort_by=balance&sort_type=desc&offset=0&limit=500`
+  const r = await fetch(url, {
+    headers: { 'X-API-KEY': apiKey, 'x-chain': 'solana', 'accept': 'application/json' }
+  })
+  if (!r.ok){
+    const t = await r.text()
+    throw new Error('Birdeye holders fetch failed: ' + t.slice(0,140))
+  }
+  const j = await r.json()
+  const arr = j?.data?.items || []
+  const holders = arr.map(it => ({
+    address: it?.owner || it?.address || 'Unknown',
+    balanceTokens: Number(it?.balance || it?.ui_amount || 0),
+    spentSOL: 0,
+  })).filter(h => h.balanceTokens >= minTokens)
+  return holders
+}
+
+// Birdeye meta
 async function fetchBirdeyeMeta(mint, apiKey){
   const r = await fetch(`https://public-api.birdeye.so/defi/token_overview?address=${mint}`, {
-    headers: {
-      'X-API-KEY': apiKey,
-      'x-chain': 'solana',
-      'accept': 'application/json'
-    }
+    headers: { 'X-API-KEY': apiKey, 'x-chain': 'solana', 'accept': 'application/json' }
   })
   if (!r.ok){
     const t = await r.text()

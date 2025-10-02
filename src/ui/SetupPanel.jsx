@@ -23,11 +23,11 @@ export default function SetupPanel({ cfg, onApply, onRefresh }){
     const next = { mint: mint.trim(), helius: helius.trim(), birdeye: birdeye.trim(), minTokens: Number(minTokens||100000) }
     localStorage.setItem(LS_KEY, JSON.stringify(next))
     onApply(next)
+    onRefresh && onRefresh()
   }
 
   return (
     <div style={{position:'fixed', left: 16, top: 16, zIndex: 10}}>
-      {/* Toggle handle */}
       <div className="glass btn" onClick={()=> setOpen(!open)}>{open ? 'Close' : '⚙️ Setup'}</div>
       {open && (
         <div className="glass" style={{marginTop: 10, padding: 14, width: 320, color:'#e9f3ff'}}>

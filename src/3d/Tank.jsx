@@ -53,7 +53,7 @@ export default function Tank(){
       </mesh>
 
       {/* Coin logo on the back wall */}
-<LogoBackdrop url="/assets/coin-logo.png" size={60} opacity={0.22} y={1} z={-41.9} />
+<LogoBackdrop url="/assets/coin-logo.png" size={60} opacity={0.22} y={12} z={-41.9} />
 
       <Bubbles />
     </group>

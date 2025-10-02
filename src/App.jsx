@@ -1,14 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
-import Tank from './3d/Tank.jsx'
-import FishSchool from './3d/FishSchool.jsx'
 import LoadingOverlay from './ui/LoadingOverlay.jsx'
 import InfoPanel from './ui/InfoPanel.jsx'
 import WinnerPanel from './ui/WinnerPanel.jsx'
 import SetupPanel from './ui/SetupPanel.jsx'
 import StatusBadge from './ui/StatusBadge.jsx'
 import { fetchHoldersAndEnrich, demoHolders } from './api/data.js'
+import RoomScene from './3d/RoomScene.jsx'
 
 const DEFAULT_MIN_TOKENS = 100000
 const AUTO_REFRESH_MS = 30000
@@ -80,12 +79,11 @@ export default function App(){
 
   return (
     <>
-      <Canvas shadows camera={{ position: [35, 12, 46], fov: 55 }}>
-        <color attach="background" args={['#031018']} />
-        <Tank />
-        <FishSchool holders={holders} onFishClick={setSelected} showLabels />
-        <OrbitControls enablePan={false} minDistance={12} maxDistance={100} />
-      </Canvas>
+ <Canvas shadows camera={{ position: [12, 7, 16], fov: 55 }} style={{ width: '100%', height: '100%' }}>
+   <color attach="background" args={['#0b1117']} />
+   <RoomScene holders={holders} onFishClick={setSelected} showLabels />
+   <OrbitControls enablePan={false} minDistance={8} maxDistance={40} target={[0, 4.3, 0]} />
+ </Canvas>
 
       {loading && <LoadingOverlay tokenName={tokenMeta?.name} />}
 

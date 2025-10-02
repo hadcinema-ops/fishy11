@@ -1,9 +1,13 @@
 import React, { useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber'
-import { Html, useGLTF } from '@react-three/drei'
+import { Html, useGLTF, Clone } from '@react-three/drei'   // ⬅️ add Clone
 
-const MODELS = ['/assets/models/clownfish.glb','/assets/models/blue_tang.glb','/assets/models/goldfish.glb']
+const MODELS = [
+  '/assets/models/clownfish.glb',
+  '/assets/models/blue_tang.glb',
+  '/assets/models/goldfish.glb'
+]
 
 function hash32(s){
   let h = 2166136261>>>0
@@ -17,9 +21,9 @@ function FishGLB({ holder, onClick, showLabel=true }){
   const modelIdx = seed % MODELS.length
   const gltf = useGLTF(MODELS[modelIdx])
   const group = useRef()
+  const modelRef = useRef()
   const scale = 0.9 + (seed % 1000)/1000 * 0.9
 
-  // Random-ish start
   const init = useMemo(() => ({
     p: new THREE.Vector3((Math.random()-0.5)*10, -1.0 + Math.random()*4.0, (Math.random()-0.5)*6.5),
     v: new THREE.Vector3((Math.random()-0.5)*0.6, (Math.random()-0.5)*0.25, (Math.random()-0.5)*0.6),
@@ -29,36 +33,38 @@ function FishGLB({ holder, onClick, showLabel=true }){
   useFrame((_, dt) => {
     const g = group.current; if (!g) return
     const p = g.position
+
+    // movement & bounds
     p.addScaledVector(init.v, dt*1.0)
     const bounds = { x: 11, yUp: 2.6, yDn: -1.9, z: 6.5 }
     if (p.x > bounds.x || p.x < -bounds.x) init.v.x *= -1
     if (p.y > bounds.yUp || p.y < bounds.yDn) init.v.y *= -1
     if (p.z > bounds.z || p.z < -bounds.z) init.v.z *= -1
-    // center attraction
+
+    // center attraction + wander
     init.v.x += (-p.x)*0.0008 + Math.sin((p.z + seed*0.001)*0.5)*0.006
     init.v.z += (-p.z)*0.0008 + Math.cos((p.x + seed*0.001)*0.5)*0.006
     init.v.y += (-p.y)*0.0005 + Math.sin((p.x+p.z+seed*0.001)*0.2)*0.0025
     init.v.clampLength(0.2, 1.0)
 
-    // Orient forward in velocity (+Z forward)
+    // orient to velocity
     const dir = init.v.clone().normalize()
     const targetQuat = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,0,1), dir)
     g.quaternion.slerp(targetQuat, Math.min(1, dt*3.0))
 
-    // Subtle swim wobble
+    // swim wobble + tiny tail shimmy
     init.wobble += dt*7.0
     const s = 1.0 + Math.sin(init.wobble)*0.02
     g.scale.setScalar(scale*s)
-
-    // Tail/fins pseudo flap: small y rotation on mesh
-    if (g.children[0]){
-      g.children[0].rotation.y = Math.sin(init.wobble*2.2)*0.15
+    if (modelRef.current){
+      modelRef.current.rotation.y = Math.sin(init.wobble*2.2)*0.15
     }
   })
 
   return (
     <group ref={group} position={init.p} onClick={(e)=>{ e.stopPropagation(); onClick?.(holder) }}>
-      <primitive object={gltf.scene} />
+      {/* IMPORTANT: Clone creates a deep copy so every fish is independent */}
+      <Clone object={gltf.scene} ref={modelRef} />
       {showLabel && (
         <Html center position={[0, 0.7, 0]} style={{ pointerEvents: 'none' }}>
           <div style={{ font: '600 12px ui-sans-serif,system-ui', padding: '3px 6px', borderRadius: '8px',

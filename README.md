@@ -44,3 +44,7 @@ VITE_MIN_TOKENS=100000
   - Use Netlify functions as a small proxy, or
   - Enable allowed origins in respective dashboards.
 - The fish AI is optimized for smooth streaming at 60 FPS on modern GPUs.
+
+
+## Live holders fallbacks
+1) Helius → 2) Birdeye → 3) Solscan public (rate-limited). If all fail, app shows DEMO and an error badge.

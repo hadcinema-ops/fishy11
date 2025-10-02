@@ -69,7 +69,7 @@ function Fish({ holder, onClick, showLabel=true }){
     const g = group.current; if (!g) return
     const p = g.position
     p.addScaledVector(init.v, dt*1.0)
-    const bounds = { x: 15, yUp: 3.2, yDn: -2.2, z: 8.5 }
+    const bounds = { x: 12, yUp: 2.8, yDn: -2.0, z: 7.0 }
     if (p.x > bounds.x || p.x < -bounds.x) init.v.x *= -1
     if (p.y > bounds.yUp || p.y < bounds.yDn) init.v.y *= -1
     if (p.z > bounds.z || p.z < -bounds.z) init.v.z *= -1

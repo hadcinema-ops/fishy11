@@ -11,23 +11,42 @@ export function demoHolders(n = 60, minTokens = 100000){
 }
 
 export async function fetchHoldersAndEnrich(mint, heliusKey, birdeyeKey, minTokens){
+  // Try serverless local endpoints first (Vercel / Netlify), to avoid CORS and 3rd-party errors.
   let holders = []
   let lastErr = null
-  try { holders = await fetchHeliusHolders(mint, heliusKey, minTokens) }
-  catch (e){ lastErr = e }
+
+  try { holders = await fetchLocalFunction(mint, minTokens) } catch(e){ lastErr = e }
   if (!holders.length){
-    try { holders = await fetchBirdeyeHolders(mint, birdeyeKey, minTokens) }
-    catch (e){ lastErr = e }
+    try { holders = await fetchHeliusHolders(mint, heliusKey, minTokens) } catch(e){ lastErr = e }
   }
   if (!holders.length){
-    try { holders = await fetchSolscanHolders(mint, minTokens) }
-    catch (e){ lastErr = e }
+    try { holders = await fetchBirdeyeHolders(mint, birdeyeKey, minTokens) } catch(e){ lastErr = e }
   }
+  if (!holders.length){
+    try { holders = await fetchSolscanHolders(mint, minTokens) } catch(e){ lastErr = e }
+  }
+
   const meta = await fetchBirdeyeMeta(mint, birdeyeKey)
   if (!holders.length) throw new Error(lastErr ? String(lastErr.message || lastErr) : 'No holders found')
   const price = meta?.price || 0
   holders.forEach(h => { h.pnl = (h.balanceTokens/1e6) * price * (Math.random()*0.4-0.2) })
   return { holders, meta }
+}
+
+async function fetchLocalFunction(mint, minTokens){
+  // Try Vercel-style first
+  let r = await fetch(`/api/holders?mint=${encodeURIComponent(mint)}&min=${minTokens}`)
+  if (r.ok){
+    const j = await r.json()
+    if (Array.isArray(j.holders) && j.holders.length) return j.holders
+  }
+  // Try Netlify-style path
+  r = await fetch(`/.netlify/functions/holders?mint=${encodeURIComponent(mint)}&min=${minTokens}`)
+  if (r.ok){
+    const j = await r.json()
+    if (Array.isArray(j.holders) && j.holders.length) return j.holders
+  }
+  throw new Error('Local function holders fetch failed')
 }
 
 // Helius holders
@@ -46,15 +65,15 @@ async function fetchHeliusHolders(mint, apiKey, minTokens){
   return holders
 }
 
-// Birdeye holders (fallback)
+// Birdeye holders fallback
 async function fetchBirdeyeHolders(mint, apiKey, minTokens){
   if (!apiKey) throw new Error('Missing Birdeye API key')
   const url = `https://public-api.birdeye.so/defi/token_holders?address=${mint}&sort_by=balance&sort_type=desc&offset=0&limit=500`
   const r = await fetch(url, { headers: { 'X-API-KEY': apiKey, 'x-chain': 'solana', 'accept': 'application/json' } })
   if (!r.ok){ throw new Error('Birdeye holders fetch failed: ' + (await r.text()).slice(0,140)) }
   const j = await r.json()
-  if (!j?.data?.items?.length) throw new Error('Birdeye holders: Not found or empty')
-  const holders = j.data.items.map(it => ({
+  const arr = j?.data?.items || []
+  const holders = arr.map(it => ({
     address: it?.owner || it?.address || 'Unknown',
     balanceTokens: Number(it?.balance || it?.ui_amount || 0),
     spentSOL: 0,
@@ -62,7 +81,7 @@ async function fetchBirdeyeHolders(mint, apiKey, minTokens){
   return holders
 }
 
-// Solscan public (final fallback; rate-limited, no key)
+// Solscan public fallback
 async function fetchSolscanHolders(mint, minTokens){
   const url = `https://public-api.solscan.io/token/holders?tokenAddress=${mint}&limit=100&offset=0`
   const r = await fetch(url, { headers: { 'accept': 'application/json' } })

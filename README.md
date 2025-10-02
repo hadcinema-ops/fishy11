@@ -48,3 +48,18 @@ VITE_MIN_TOKENS=100000
 
 ## Live holders fallbacks
 1) Helius → 2) Birdeye → 3) Solscan public (rate-limited). If all fail, app shows DEMO and an error badge.
+
+## Serverless holders fetch (recommended)
+To avoid CORS and third‑party limits, deploy with a serverless function:
+
+### Vercel
+- Add `api/holders.js` (included).
+- Set env var `HELIUS_API_KEY` in your Vercel project.
+- The app will call `/api/holders?mint=...&min=100000` automatically.
+
+### Netlify
+- Function at `netlify/functions/holders.js` (included).
+- Set env var `HELIUS_API_KEY` in Netlify project settings.
+- The app will also try `/.netlify/functions/holders?mint=...&min=100000`.
+
+If both endpoints 404, the app falls back to public APIs (Helius REST, Birdeye, Solscan).

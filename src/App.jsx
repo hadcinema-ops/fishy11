@@ -80,11 +80,11 @@ export default function App(){
 
   return (
     <>
-      <Canvas shadows camera={{ position: [10, 4.5, 12], fov: 50 }} style={{ width: '100%', height: '100%' }}>
+      <Canvas shadows camera={{ position: [35, 12, 46], fov: 55 }}>
         <color attach="background" args={['#031018']} />
         <Tank />
         <FishSchool holders={holders} onFishClick={setSelected} showLabels />
-        <OrbitControls enablePan={false} minDistance={6} maxDistance={22} />
+        <OrbitControls enablePan={false} minDistance={12} maxDistance={100} />
       </Canvas>
 
       {loading && <LoadingOverlay tokenName={tokenMeta?.name} />}

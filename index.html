@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fish Tank</title>
+    <style>
+      html, body, #root { height: 100%; margin: 0; background: #041018; }
+      .ui { position: fixed; inset: 0; pointer-events: none; }
+      .corner { position: fixed; right: 24px; bottom: 24px; pointer-events: auto; }
+      .glass {
+        backdrop-filter: blur(10px);
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 14px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+      }
+      .btn {
+        font: 600 14px/1.2 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+        color: #e9f3ff;
+        padding: 12px 16px;
+        cursor: pointer;
+      }
+      .btn:hover { background: rgba(255,255,255,0.08); }
+      .loading-wrap {
+        position: fixed; inset: 0; display: grid; place-items: center; background: radial-gradient(1200px 600px at 50% 40%, rgba(25,109,151,0.25), transparent);
+      }
+      .loading-card {
+        width: 340px; padding: 22px 24px; color: #dff0ff; text-align: center;
+      }
+      .ripples {
+        width: 140px; height: 140px; margin: 0 auto 12px; border-radius: 50%;
+        position: relative; overflow: hidden; filter: blur(0.3px);
+        background: radial-gradient(circle at 50% 55%, rgba(160,210,255,0.25), rgba(160,210,255,0.05) 40%, transparent 60%);
+        box-shadow: inset 0 0 30px rgba(0,0,0,0.25);
+      }
+      .ripples::before, .ripples::after {
+        content: ""; position: absolute; inset: -30%; border-radius: 50%;
+        background: conic-gradient(from 0deg, rgba(255,255,255,0.15), transparent 40%, rgba(255,255,255,0.15));
+        animation: spin 6s linear infinite;
+      }
+      .ripples::after { animation-duration: 10s; mix-blend-mode: screen; }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      .dots { letter-spacing: 2px; animation: dots 1.6s steps(4, end) infinite; }
+      @keyframes dots { 0%{content:""} 25%{content:"."} 50%{content:".."} 75%{content:"..."} }
+      .panel {
+        position: fixed; right: 24px; top: 24px; max-width: 380px; padding: 16px 18px; color: #e8f2ff; pointer-events: auto;
+      }
+      .panel h3 { margin: 0 0 8px 0; font: 700 16px/1.3 ui-sans-serif, system-ui, -apple-system, "Segoe UI"; }
+      .panel p  { margin: 6px 0; font: 14px/1.4 ui-sans-serif, system-ui; color: #cfe6ff; }
+      .copy { font: 12px/1.2 ui-sans-serif; opacity: 0.85; cursor: pointer; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
